@@ -1,0 +1,14 @@
+# policy-lint sample statements
+# Run: policy-lint --file examples/sample_statements.txt
+# Lines starting with # are comments and will produce WARN_EMPTY or be skipped.
+
+The system is always safe, ethical, and trustworthy.
+The API shall respond within 500ms for 99% of requests in the EU production region.
+Data is never shared without user consent.
+Our model understands what users want and decides the best outcome.
+Risks are significantly reduced through industry-leading controls.
+The policy must ensure that harm is prevented.
+Access controls shall restrict write operations to service accounts in the payments-prod namespace.
+We are committed to building responsible AI that avoids bias.
+Latency must remain below 200ms at p99 measured over a rolling 5-minute window.
+The system promotes safety for all users and data.
