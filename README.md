@@ -1,3 +1,5 @@
+![CI](https://github.com/LalaSkye/policy-lint/actions/workflows/ci.yml/badge.svg)
+
 # policy-lint
 
 A deterministic, auditable linter for governance statements. Paste in a policy sentence; get back structured warnings about unfalsifiable claims, vague safety language, intent attribution, and missing scope — with no AI, no ML, no orchestration layer. Just a brick.
