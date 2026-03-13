@@ -10,6 +10,8 @@ A deterministic, auditable linter for governance statements. Paste in a policy s
 
 Policy documents are full of sentences that *sound* like commitments but contain no testable claims. Words like "always safe", "ensures responsible behaviour", or "significantly reduces risk" are grammatically valid but operationally empty. `policy-lint` makes that visible, cheaply and reproducibly, so that reviewers, auditors, and engineers can ask: *can this sentence be falsified?* It produces no recommendations and rewrites nothing. It only surfaces the structural properties of what's there.
 
+This is a pre-execution admissibility tool for governance language: it checks whether claims are structurally sound before they enter a decision surface.
+
 ---
 
 ## What it does / what it does not do
@@ -110,7 +112,7 @@ pytest
 
 ## Non-goals
 
-No web UI. No GitHub Action templates. No LLM integration. No recommendations engine. No automatic rewriting. No dataset scraping.
+No web UI. No GitHub Action templates. No LLM integration. No recommendations engine. No automatic rewriting. No dataset collection.
 
 ---
 
