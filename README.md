@@ -171,6 +171,16 @@ No web UI. No GitHub Action templates. No LLM integration. No recommendations en
 
 ---
 
+## Work With Me
+
+Does your AI policy language hold up under scrutiny? I consult on governance statement design, policy auditing, and EU AI Act compliance tooling.
+
+→ **ricky.mcjones@gmail.com**
+→ [LinkedIn](https://linkedin.com/in/ricky-jones-1b745474)
+→ [GitHub Sponsors](https://github.com/sponsors/LalaSkye)
+
+---
+
 ## License
 
 Apache 2.0. See `LICENSE`.
