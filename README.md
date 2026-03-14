@@ -1,40 +1,55 @@
 ![CI](https://github.com/LalaSkye/policy-lint/actions/workflows/ci.yml/badge.svg)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
+![stdlib only](https://img.shields.io/badge/stdlib-only-green)
+![< 200 LOC](https://img.shields.io/badge/LOC-%3C200-lightgrey)
 
 # policy-lint
 
-A deterministic, auditable linter for governance statements. Paste in a policy sentence; get back structured warnings about unfalsifiable claims, vague safety language, intent attribution, and missing scope — with no AI, no ML, no orchestration layer. Just a brick.
+Deterministic linter for governance statements — surfaces unfalsifiable claims, vague safety language, and scope gaps. No AI, no ML, no opinions.
 
 ---
 
-## Why this exists
+## Why This Exists
 
-Policy documents are full of sentences that *sound* like commitments but contain no testable claims. Words like "always safe", "ensures responsible behaviour", or "significantly reduces risk" are grammatically valid but operationally empty. `policy-lint` makes that visible, cheaply and reproducibly, so that reviewers, auditors, and engineers can ask: *can this sentence be falsified?* It produces no recommendations and rewrites nothing. It only surfaces the structural properties of what's there.
-
-This is a pre-execution admissibility tool for governance language: it checks whether claims are structurally sound before they enter a decision surface.
+Policy documents are full of sentences that sound like commitments but contain no testable claims. Words like "always safe", "ensures responsible behaviour", or "significantly reduces risk" are grammatically valid but operationally empty. `policy-lint` makes that visible, cheaply and reproducibly, so that reviewers, auditors, and engineers can ask: *can this sentence be falsified?* It produces no recommendations and rewrites nothing. It only surfaces the structural properties of what is there. Governance statements themselves need governance — this is the admissibility check for policy language before it enters a decision surface.
 
 ---
 
-## What it does / what it does not do
+## Architecture
 
-**Does:**
-- Classify governance statements by structural posture: `HARD_INVARIANT`, `COST_CURVE`, `AMBIGUOUS`, or `NON_FALSIFIABLE`
-- Emit sorted, typed warnings per rule family (universal claims, intent language, vague safety, non-operational verbs, scope gaps, marketing language)
-- Produce a 0–1 score where higher = more structurally sound
-- Accept inline strings, files, or stdin
-- Output plain text or `--json` (deterministic key ordering)
-
-**Does not:**
-- Use AI or ML at any layer
-- Provide legal advice or policy recommendations
-- Rewrite or fix statements
-- Connect to external services
-- Depend on anything outside the Python standard library
+```
+  Input (string / --file / stdin)
+         |
+         v
+  ┌──────────────────────────────────────────────────────┐
+  │                   policy_lint.py                      │
+  │                                                       │
+  │  Rule engine (named regex patterns, stdlib re only)   │
+  │                                                       │
+  │  WARN_UNIVERSAL      ──┐                              │
+  │  WARN_VAGUE_SAFETY   ──┤                              │
+  │  WARN_INTENT_LANGUAGE──┤──> sorted typed warnings     │
+  │  WARN_MARKETING      ──┤                              │
+  │  WARN_NON_OPERATIONAL──┤                              │
+  │  WARN_SCOPE_MISSING  ──┤                              │
+  │  WARN_EMPTY          ──┘                              │
+  │         |                                             │
+  │         v                                             │
+  │  Posture classification + 0–1 score                   │
+  └──────────────────────────────────────────────────────┘
+         |
+         v
+  Plain text output  OR  --json (deterministic key ordering)
+```
 
 ---
 
 ## Quickstart
 
 ```bash
+git clone https://github.com/LalaSkye/policy-lint.git
+cd policy-lint
 pip install -e .
 
 # Inline statement
@@ -52,12 +67,12 @@ policy-lint --json "The API shall respond within 500ms for 99% of requests."
 
 ---
 
-## Example output
+## Example Output
 
 ```
 STATEMENT : 'The system is always safe and trustworthy.'
-  [ERROR  ] WARN_UNIVERSAL  →  always
-  [WARNING] WARN_VAGUE_SAFETY  →  safe, trustworthy
+  [ERROR  ] WARN_UNIVERSAL    -->  always
+  [WARNING] WARN_VAGUE_SAFETY -->  safe, trustworthy
   POSTURE   : NON_FALSIFIABLE
   SCORE     : 0.2857
   FLAGS     : WARN_UNIVERSAL, WARN_VAGUE_SAFETY
@@ -66,23 +81,43 @@ STATEMENT : 'The API shall respond within 500ms for 99% of requests.'
   (no warnings)
   POSTURE   : HARD_INVARIANT
   SCORE     : 1.0000
-  FLAGS     : —
+  FLAGS     : --
+---
+STATEMENT : 'The system ensures responsible behaviour for all users.'
+  [WARNING] WARN_NON_OPERATIONAL   -->  ensures
+  [WARNING] WARN_VAGUE_SAFETY      -->  responsible
+  [WARNING] WARN_SCOPE_MISSING     -->  users
+  POSTURE   : COST_CURVE
+  SCORE     : 0.4286
+  FLAGS     : WARN_NON_OPERATIONAL, WARN_VAGUE_SAFETY, WARN_SCOPE_MISSING
+```
+
+JSON output:
+
+```json
+{
+  "statement": "The API shall respond within 500ms for 99% of requests.",
+  "posture": "HARD_INVARIANT",
+  "score": 1.0,
+  "flags": [],
+  "warnings": []
+}
 ```
 
 ---
 
-## Posture classifications
+## Posture Classifications
 
 | Posture | Meaning |
 |---|---|
 | `HARD_INVARIANT` | Measurable, scoped, no universal claims — structurally falsifiable |
-| `COST_CURVE` | Soft commitment (aims/seeks/should) or moderate warning load |
+| `COST_CURVE` | Soft commitment (`aims`/`seeks`/`should`) or moderate warning load |
 | `AMBIGUOUS` | Insufficient signal to classify firmly |
 | `NON_FALSIFIABLE` | High warning load, universal claims, or vague safety without conditions |
 
 ---
 
-## Rule families
+## Rule Families
 
 | Rule ID | Triggers |
 |---|---|
@@ -96,24 +131,46 @@ STATEMENT : 'The API shall respond within 500ms for 99% of requests.'
 
 ---
 
-## Design constraints
+## Design Constraints
 
-- **Deterministic:** same input → same output across Python 3.10 / 3.11 / 3.12; no randomness, no locale dependence
+- **Deterministic:** same input produces same output across Python 3.10 / 3.11 / 3.12; no randomness, no locale dependence
 - **Auditable:** all rules are named regex patterns in a single file; no hidden logic
-- **Small:** core module ≤ 200 LOC; zero non-stdlib dependencies
-- **Tested:** `pytest` suite covers determinism, rule firing, edge cases, and ordering stability
+- **Small:** core module < 200 LOC; zero non-stdlib dependencies
+- **Tested:** pytest suite covers determinism, rule firing, edge cases, and ordering stability
+
+---
+
+## Testing
 
 ```bash
 pip install pytest
-pytest
+pytest -v
 ```
 
 ---
 
-## Non-goals
+## Non-Goals
 
-No web UI. No GitHub Action templates. No LLM integration. No recommendations engine. No automatic rewriting. No dataset collection.
+No web UI. No GitHub Action templates. No LLM integration. No recommendations engine. No automatic rewriting. No dataset collection. Not AI. Not legal advice. Not a policy engine.
 
 ---
 
-*Not AI. Not legal advice. Not a policy engine.*
+## Part of the Execution Boundary Series
+
+| Repo | Layer | What It Does |
+|---|---|---|
+| [interpretation-boundary-lab](https://github.com/LalaSkye/interpretation-boundary-lab) | Upstream boundary | 10-rule admissibility gate for interpretations |
+| [dual-boundary-admissibility-lab](https://github.com/LalaSkye/dual-boundary-admissibility-lab) | Full corridor | Dual-boundary model with pressure monitoring and C-sector rotation |
+| [execution-boundary-lab](https://github.com/LalaSkye/execution-boundary-lab) | Execution boundary | Demonstrates cascading failures without upstream governance |
+| [stop-machine](https://github.com/LalaSkye/stop-machine) | Control primitive | Deterministic three-state stop controller |
+| [constraint-workshop](https://github.com/LalaSkye/constraint-workshop) | Control primitives | Authority gate, invariant litmus, stop machine |
+| [csgr-lab](https://github.com/LalaSkye/csgr-lab) | Measurement | Contracted stability and drift measurement |
+| [invariant-lock](https://github.com/LalaSkye/invariant-lock) | Drift prevention | Refuse execution unless version increments |
+| [policy-lint](https://github.com/LalaSkye/policy-lint) | Policy validation | Deterministic linter for governance statements |
+| [deterministic-lexicon](https://github.com/LalaSkye/deterministic-lexicon) | Vocabulary | Fixed terms, exact matches, no inference |
+
+---
+
+## License
+
+Apache 2.0. See `LICENSE`.
