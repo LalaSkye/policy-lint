@@ -184,3 +184,15 @@ Does your AI policy language hold up under scrutiny? I consult on governance sta
 ## License
 
 Apache 2.0. See `LICENSE`.
+
+---
+
+## Authorship & Rights
+
+All architecture, methods, and system designs in this repository are the original work of **Ricky Dean Jones** unless otherwise stated.
+No rights to use, reproduce, or implement are granted without explicit permission beyond the terms of the repository licence.
+
+**Author:** Ricky Dean Jones
+**Repository owner:** [LalaSkye](https://github.com/LalaSkye)
+**Status:** Active research / architecture work
+**Part of:** [Execution Boundary Series](https://github.com/LalaSkye) — TrinityOS / AlvianTech
